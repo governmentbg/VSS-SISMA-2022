@@ -1,0 +1,38 @@
+﻿@using SISMA.Core.Models.Reports
+@model ReportDataVM
+
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Manage" method="post" id="frmManage">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @Html.HiddenFor(x => x.Id)
+            @Html.DisplayFor(x => x.IntegrationName, "obj")
+            @Html.DisplayFor(x => x.CatalogName, "obj")
+            <div class="row">
+                <div class="col-md-6">
+                    @Html.DisplayFor(x => x.PeriodNo, "obj")
+                </div>
+                <div class="col-md-6">
+                    @Html.DisplayFor(x => x.PeriodYear, "obj")
+                </div>
+            </div>
+            @Html.EditorFor(x => x.ReportStateId, "GenericDropDown")
+
+            <div class="form-group">
+                <input type="submit" value="Запис" class="btn btn-success submit" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        attachAjaxForm('#frmManage',function(data){
+            //debugger;
+           if(data.responseJSON.isSuccessfull){
+               HideModal();
+               refreshTable('#mainTable');
+           }     
+        });
+    });
+</script>

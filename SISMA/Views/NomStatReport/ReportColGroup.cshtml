@@ -1,0 +1,53 @@
+﻿@using SISMA.Core.Models.Reports
+@model ColSelectVM
+@{
+    if (Model.SelectedList == null)
+    {
+        Model.SelectedList = new List<string>().ToArray();
+    }
+}
+<div class="row">
+    <div class="col-md-8">
+        <fieldset class="fs-group">
+            <legend>Кодове към отчет: @Model.Label</legend>
+            <form action="@Url.Action("ReportColGroup")" method="post">
+                @Html.HiddenFor(x=>x.CatalogId)
+                @Html.HiddenFor(x=>x.StatReportId)
+                <div id="divSelect">
+                    @Html.EditorFor(x=>x.SelectedList,"DualListBox",null,new{label="кодове по ИБД"})
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Запис" class="btn btn-success" />
+                    <a asp-action="ReportEdit" asp-route-id="@Model.StatReportId" asp-route-tabName="tabCols" class="btn btn-default">Назад</a>
+                </div>
+            </form>
+        </fieldset>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        $('#divSelect').hide();
+        setTimeout(function(){
+            loadList();
+        },250);
+    });
+    function loadList(){
+        requestContent('@Url.Action("GetCatalogCodeByCatalog","Ajax")',{catalogId:@(Model.CatalogId)},function(data){
+            $('#divSelect').show();
+            fillCombo(data,'#SelectedList',null);
+            loadSelectedEntities();
+            initDualListBox('#SelectedList',20);
+        });
+    }
+
+    function loadSelectedEntities(){
+        if($('#SelectedList').data('loaded')){
+            return;
+        }
+        let ids = '@Model.SelectedIds';
+        $(ids.split(',')).each(function(i,e){
+             $('#SelectedList option[value="'+e+'"]').attr('selected','selected');
+        });
+    }
+</script>

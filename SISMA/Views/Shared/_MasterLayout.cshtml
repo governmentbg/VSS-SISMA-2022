@@ -1,0 +1,59 @@
+﻿@using Microsoft.Extensions.Configuration
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>@ViewData["Title"]</title>
+    <script type="text/javascript">
+          var rootDir = '@Url.Content("~/")';
+          window.paceOptions = {
+            ajax: {
+                ignoreURLs: ['visualstudio.com', 'browserLink', 'aspnetcore-browser-refresh', 'browserLinkSignalR', 'ws:', 'wss:'],
+                trackWebSockets: true
+            }
+        };
+        function logOff() {
+             let _url = '@Url.Action("LogOff","Account")';
+
+             $.post(_url, null)
+                 .done(function (result) {
+                         if (result === 'ok') {
+                             window.location.href = '@Url.Action("Index", "Home")';
+                         }
+                         else {
+                             console.log("Неуспешно излизане");
+                         }
+                     })
+                 .fail(function (error) {
+                     console.log("Грешка: Неуспешно излизане."+error);
+                     })
+                 .always();
+         }
+    </script>
+    <link rel="stylesheet" href="~/css/prod/site.min.css" />
+    <script src="~/js/prod/head.min.js" type="text/javascript"></script>
+     @RenderSection("head", required: false)
+</head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        @RenderSection("mainNav", required: false)
+
+        @RenderBody()        
+
+        @RenderSection("footer", required: false)
+
+    </div>
+    <!-- ./wrapper -->
+    <script src="~/js/prod/site.min.js"></script>
+    @{
+        await Html.RenderPartialAsync("_ModalDialog");
+
+        await Html.RenderPartialAsync("_UserMessages");
+    }
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

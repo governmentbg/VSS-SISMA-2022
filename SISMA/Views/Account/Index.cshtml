@@ -1,0 +1,114 @@
+﻿@using SISMA.Core.Models.Identity
+@using SISMA.Infrastructure.Constants
+@model FilterAccountVM
+@{
+    ViewData["Title"] = "Потребители";
+    ViewBag.MenuItemValue = "accounts";
+}
+@section chelp{
+<partial name="_ContextHelp" model="@(new ContextHelpVM("Модул Конфигуриране - Меню Потребители","008_account"))" />
+}
+
+<fieldset class="fs-group">
+    <legend>Търсене</legend>
+    <div class="row">
+        <div class="col-md-2">
+            @Html.EditorFor(x=>x.Uic)
+        </div>
+        <div class="col-lg-4">
+            @Html.EditorFor(x=>x.FullName)
+        </div>
+        <div class="col-lg-4">
+            @Html.EditorFor(x=>x.Email)
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 text-left pb-15">
+            <button type="button" class="btn btn-primary" id="btnFilter" onclick="refreshTable('#mainTable')" value="Филтриране" title="Филтриране">
+                Търсене
+                <i class="fa fa-search" title="Търсене"></i>
+            </button>
+        </div>
+    </div>
+</fieldset>
+
+<div class="row">
+    <div class="col-md-12 text-right pb-15">
+        <a asp-action="Add" class="btn btn-success btn-sm">
+            <i class="fa fa-plus"></i>
+            Регистриране
+        </a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <table id="mainTable" class="table table-hover table-striped"></table>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    $(function () {
+        var table = $('#mainTable').DataTable({
+            ajax: {
+                "url": "@Url.Action("ListData")",
+                "type": "POST",
+                "datatype": "json",
+                data: function (d) {
+                d.filter = {
+                    Uic:$('#Uic').val(),
+                    FullName:$('#FullName').val(),
+                    Email:$('#Email').val()
+                    }
+                }
+            },
+             "rowCallback": function( row, data, index ) {
+                if ( !data.isActive ) {
+                $(row).addClass('text-danger');
+                }
+              },
+            filter:false,
+            columns: [
+
+                {
+                    name: 'fullName',
+                    data: 'fullName',
+                    title: 'Имена',
+                    sortable: true,
+                    searchable: true
+                },
+                {
+                    name: 'email',
+                    data: "email",
+                    title: 'Електронна поща',
+                    sortable: true,
+                    searchable: true
+                }
+                ,
+                {
+                    name: 'actions',
+                    data: "id",
+                    title: "",
+                    sortable: false,
+                    searchable: false,
+                    className: "text-center noExport",
+                    "render": function (value) {
+                        return TemplateToHtml('#templateEdit', value);
+                    }
+                }
+            ]
+        });
+
+    });
+</script>
+<script id="templateList" type="text/x-handlebars-template">
+    <ul class="dt-ul-list">
+        {{#each this}}
+        <li>{{this}}</li>
+        {{/each}}
+    </ul>
+</script>
+<script id="templateEdit" type="text/x-handlebars-template">
+    <a href="@Url.Action("Edit")/{{this}}" class="btn btn-warning btn-sm" title="Редактирай"><i class="fa fa-edit"></i><span class="d-none d-lg-inline"> Редактирай</span></a>
+</script>
+}

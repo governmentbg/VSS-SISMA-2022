@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<doc>
+	<assembly>
+		<name>SISMA.Api</name>
+	</assembly>
+	<members>
+		<member name="T:SISMA.Api.Authentication.AuthenticationBuilderExtensions">
+			<summary>
+				Методи за добавяне на Bearer Token авторизация в IoC контейнера
+			</summary>
+		</member>
+		<member name="M:SISMA.Api.Authentication.AuthenticationBuilderExtensions.AddBearerTokenSupport(Microsoft.AspNetCore.Authentication.AuthenticationBuilder,System.Action{SISMA.Api.Authentication.BearerTokenAuthenticationOptions})">
+			<summary>
+				Добавяне към IoC контейнера с възможност за настройка
+			</summary>
+			<param name="authenticationBuilder">Разширяван обект</param>
+			<param name="options">Настройки</param>
+			<returns></returns>
+		</member>
+		<member name="M:SISMA.Api.Authentication.AuthenticationBuilderExtensions.AddBearerTokenSupport(Microsoft.AspNetCore.Authentication.AuthenticationBuilder)">
+			<summary>
+				Добавяне към IoC контейнера
+			</summary>
+			<param name="authenticationBuilder">Разширяван обект</param>
+			<returns></returns>
+		</member>
+		<member name="T:SISMA.Api.Authentication.BearerTokenAuthenticationHandler">
+			<summary>
+				Автентикация с Bearer Token
+			</summary>
+		</member>
+		<member name="M:SISMA.Api.Authentication.BearerTokenAuthenticationHandler.#ctor(Microsoft.Extensions.Options.IOptionsMonitor{SISMA.Api.Authentication.BearerTokenAuthenticationOptions},Microsoft.Extensions.Logging.ILoggerFactory,System.Text.Encodings.Web.UrlEncoder,Microsoft.AspNetCore.Authentication.ISystemClock,SISMA.Api.Authentication.IGetBearerTokenQuery)">
+			<summary>
+				Инжектиране на зависимости
+			</summary>
+			<param name="options">Настройки</param>
+			<param name="logger">Системен Логър</param>
+			<param name="encoder">форматоира текст в URL съвместим</param>
+			<param name="clock">Системен часовник</param>
+			<param name="getApiKeyQuery">Метод, позволяващ извличане на токена</param>
+		</member>
+		<member name="M:SISMA.Api.Authentication.BearerTokenAuthenticationHandler.HandleAuthenticateAsync">
+			<summary>
+				Метод, осъществяващ автентикацията
+			</summary>
+			<returns></returns>
+		</member>
+		<member name="M:SISMA.Api.Authentication.BearerTokenAuthenticationHandler.ToHexString(System.Byte[])">
+			<summary>
+				Кодира текст в шестнайсетичен код
+			</summary>
+			<param name="bytes">
+				Текста за кодиране,
+				като масив от байтове
+			</param>
+			<returns>текст в шестнайсетичен код</returns>
+		</member>
+		<member name="T:SISMA.Api.Authentication.BearerTokenAuthenticationOptions">
+			<summary>
+				Настройки на Bearer Token Авторизацията
+			</summary>
+		</member>
+		<member name="F:SISMA.Api.Authentication.BearerTokenAuthenticationOptions.DefaultScheme">
+			<summary>
+				Схема по подразбиране
+			</summary>
+		</member>
+		<member name="P:SISMA.Api.Authentication.BearerTokenAuthenticationOptions.Scheme">
+			<summary>
+				Схема
+			</summary>
+		</member>
+		<member name="F:SISMA.Api.Authentication.BearerTokenAuthenticationOptions.AuthenticationType">
+			<summary>
+				Тип на автентикацията
+			</summary>
+		</member>
+		<member name="T:SISMA.Api.Authentication.GetBearerTokenQuery">
+			<summary>
+				Достъп до информация на потребителя по Bearer Token
+			</summary>
+		</member>
+		<member name="M:SISMA.Api.Authentication.GetBearerTokenQuery.#ctor(SISMA.Infrastructure.Data.Common.IRepository)">
+			<summary>
+				Инжектиране на зависимости
+			</summary>
+			<param name="_repo">Услуга за достъп до Redis</param>
+		</member>
+		<member name="M:SISMA.Api.Authentication.GetBearerTokenQuery.GetDataByToken(System.String)">
+			<summary>
+				Извлича информация за потребителя по token
+			</summary>
+			<param name="token">Идентификационен token</param>
+			<returns></returns>
+		</member>
+		<member name="T:SISMA.Api.Authentication.IGetBearerTokenQuery">
+			<summary>
+				Достъп до информация на потребителя по Bearer Token
+			</summary>
+		</member>
+		<member name="M:SISMA.Api.Authentication.IGetBearerTokenQuery.GetDataByToken(System.String)">
+			<summary>
+				Извлича информация за потребителя по token
+			</summary>
+			<param name="token">Идентификационен token</param>
+			<returns></returns>
+		</member>
+		<member name="T:SISMA.Api.Controllers.BaseController">
+			<summary>
+				API  - Базов контролер
+			</summary>
+		</member>
+		<member name="T:SISMA.Api.Controllers.DataController">
+			<summary>
+				Съобщения подавани към СИСМА от системите на интегрираните институции
+			</summary>
+		</member>
+		<member name="M:SISMA.Api.Controllers.DataController.submit(SISMA.Infrastructure.Contracts.Data.SismaModel)">
+			<summary>
+				Заявка за регистриране на статистически пакет данни
+			</summary>
+			<returns></returns>
+			<response code="200">R002 Отговор за регистриране на пакет</response>
+			<response code="400">CL099 Съобщение за грешка в отговор на заявка от всеки тип</response>
+			<response code="401">Unauthorized</response>
+			<response code="403">CL099 Съобщение за грешка в отговор на заявка от всеки тип</response>
+			<response code="500">CL099 Съобщение за грешка в отговор на заявка от всеки тип</response>
+		</member>
+		<member name="T:SISMA.Api.Extensions.IOWebAppServiceCollectionExtension">
+			<summary>
+				Описва услугите и контекстите на приложението
+			</summary>
+		</member>
+		<member name="M:SISMA.Api.Extensions.IOWebAppServiceCollectionExtension.AddApplicationServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+			<summary>
+				Регистрира услугите на приложението в  IoC контейнера
+			</summary>
+			<param name="services">Регистрирани услуги</param>
+		</member>
+		<member name="M:SISMA.Api.Extensions.IOWebAppServiceCollectionExtension.AddApplicationDbContext(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+			<summary>
+				Регистрира контекстите на приложението в IoC контейнера
+			</summary>
+			<param name="services">Регистрирани услуги</param>
+			<param name="Configuration">Настройки на приложението</param>
+		</member>
+		<member name="T:SISMA.Api.Filters.ApplyTagDescriptions">
+			<summary>
+				Филтър за добавяне на коментар към контролер в OpenApi
+			</summary>
+		</member>
+		<member name="M:SISMA.Api.Filters.ApplyTagDescriptions.Apply(Microsoft.OpenApi.Models.OpenApiDocument,Swashbuckle.AspNetCore.SwaggerGen.DocumentFilterContext)">
+			<summary>
+				Добавя коментар в контролерите
+			</summary>
+			<param name="swaggerDoc">Документ, съдържащ документацията</param>
+			<param name="context">Контекст на заявката</param>
+		</member>
+	</members>
+</doc>

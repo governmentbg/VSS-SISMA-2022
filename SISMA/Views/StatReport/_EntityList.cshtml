@@ -1,0 +1,46 @@
+﻿@model int
+@*Integration.Id*@
+
+
+<fieldset class="fs-group">
+    <legend>Институции</legend>
+    <div class="row">
+        <div class="col-md-12 text-right pb-15">
+            <a href="#" onclick="loadEntityFilter();return false;" class="btn btn-success btn-sm">
+                <i class="fa fa-plus"></i> Избери
+            </a>
+        </div>
+    </div>
+    <div>
+        <ul class="ul-entity-list" id="ulSelectedList"></ul>
+    </div>
+</fieldset>
+
+<script>
+    $(function(){
+        requestContent('@Url.Action("GetEntityListByIntegration","Ajax")',{integrationId:@(Model),idList:$('#EntityList').val()},function(data){
+            $('#ulSelectedList').html('');
+            for (var i = 0; i < data.length; i++) {
+                let li = document.createElement('li');
+                li.setAttribute('data-id', data[i].value);
+                li.innerText = data[i].text;
+                 $('#ulSelectedList').append(li.outerHTML);
+            }
+        });
+    });
+    function loadEntityFilter(){
+        requestContent('@Url.Action("Get_EntityFilter","StatReport")',{integrationId:@(Model),selectedContainer:'#ulSelectedList'},function(html){
+            ShowModalDialog('Изберете',html,true);
+        });
+    }
+    function entitySelectedCallback(){
+        $('#EntityList').val(getEntityList());
+    }
+    function getEntityList(){
+        let ids = [];
+        $('#ulSelectedList li').each(function(i,e){
+            ids.push($(e).data('id'));
+        });
+        return ids.join(',');
+    }
+</script>

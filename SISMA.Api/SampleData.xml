@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<sisma>
+	<context>
+		<integrationType>1</integrationType>
+		<reportType>1-01</reportType>
+		<periodNumber>12</periodNumber>
+		<periodYear>2021</periodYear>
+		<methodName>add</methodName>
+	</context>
+	<codes>
+		<code ibdCode="401001" count="456">
+			<details>
+				<detail entityCode="123" personUIC="1234567890 (optional)" personName="Иван Петров (optional)" statisticCode="0410 (optional)" count="12345"/>
+				<detail entityCode="124" personUIC="1234567890 (optional)" personName="Иван Петров (optional)" statisticCode="0410 (optional)" count="12346"/>
+				<detail entityCode="125" personUIC="1234567890 (optional)" personName="Иван Петров (optional)" statisticCode="0410 (optional)" count="12347"/>
+			</details>
+		</code>
+		<code ibdCode="401002" count="678">
+			<details>
+				<detail entityCode="123" personUIC="1234567890 (optional)" personName="Иван Петров (optional)" statisticCode="0410 (optional)" count="12345"/>
+				<detail entityCode="124" personUIC="1234567890 (optional)" personName="Иван Петров (optional)" statisticCode="0410 (optional)" count="12346"/>
+				<detail entityCode="125" personUIC="1234567890 (optional)" personName="Иван Петров (optional)" statisticCode="0410 (optional)" count="12347"/>
+			</details>
+		</code>
+	</codes>
+</sisma>

@@ -1,0 +1,156 @@
+﻿@using SISMA.Core.Models.Reports
+@model FilterReportData
+@{
+    ViewData["Title"] = "Входящи данни";
+    ViewBag.MenuItemValue = $"reportdata";
+}
+
+@section chelp{
+<partial name="_ContextHelp" model="@(new ContextHelpVM("Модул входящи данни","002_data"))" />
+}
+<fieldset class="fs-group filter-form">
+    <legend>Търсене</legend>
+    <div class="row">
+        <div class="col-md-3">
+            @Html.EditorFor(x=>x.IntegrationId,"GenericDropDown")
+        </div>
+        <div class="col-md-9">
+            @Html.EditorFor(x=>x.CatalogId,"GenericDropDown")
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            @Html.EditorFor(x=>x.DateFrom,"DateTime")
+        </div>
+        <div class="col-md-3">
+            @Html.EditorFor(x=>x.DateTo,"DateTime")
+        </div>
+        <div class="col-md-2">
+            @Html.EditorFor(x=>x.PeriodNo,"GenericDropDown")
+        </div>
+        <div class="col-md-2">
+            @Html.EditorFor(x=>x.PeriodYear,"GenericDropDown")
+        </div>
+        <div class="col-md-2">
+            @Html.EditorFor(x=>x.ReportStateId,"GenericDropDown")
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 text-left pb-15">
+            <button type="button" class="btn btn-primary" id="btnFilter" onclick="loadData();return false;" value="Филтриране" title="Филтриране">
+                Филтриране
+                <i class="fa fa-search" title="Търсене"></i>
+            </button>
+        </div>
+    </div>
+</fieldset>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="mainTable" class="table table-hover table-striped"></table>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    $(function () {
+         $('#IntegrationId').change(function(){
+            requestCombo('@Url.Action("GetCatalogByIntegration","Ajax")',{integrationId:$(this).val(),defaultElement:true},'#CatalogId',null);
+         });
+    });
+    function loadData(){
+         if (!checkFilterFormHasData('.filter-form')) {
+            swalOk('Въведете стойност в поне един филтър.', function () { });
+            return false;
+        }
+
+        if ($.fn.dataTable.isDataTable('#mainTable')) {
+            refreshTable('#mainTable');
+        }
+        else {
+         var table = $('#mainTable').DataTable({
+            ajax: {
+                "url": "@Url.Action("LoadData")",
+                "type": "POST",
+                "datatype": "json",
+                data: function (d) {
+                    d.filter = {
+                        IntegrationId:$('#IntegrationId').val(),
+                        CatalogId:$('#CatalogId').val(),
+                        DateFrom:$('#DateFrom').val(),
+                        DateTo:$('#DateTo').val(),
+                        PeriodNo:$('#PeriodNo').val(),
+                        PeriodYear:$('#PeriodYear').val(),
+                        ReportStateId:$('#ReportStateId').val()
+                    }
+                }
+            },
+            filter:false,
+            //sort:false,
+            columns: [
+                {
+                    name: 'reportDate',
+                    data: "reportDate",
+                    title: 'Подаден на',
+                    className: "text-center",
+                    "render": function (value) {
+                        return JsonBGdatetime(value);
+                    }
+                },{
+                    name: 'integrationName',
+                    data: 'integrationName',
+                    title: 'Система'
+                },
+                {
+                    name: 'catalogName',
+                    data: 'catalogName',
+                    title: 'Каталог'
+                },
+                {
+                    name: 'periodNo',
+                    data: 'periodNo',
+                    title: 'Период'
+                },
+                {
+                    name: 'periodYear',
+                    data: 'periodYear',
+                    title: 'Година'
+                },
+
+                {
+                    name: 'reportSourceName',
+                    data: 'reportSourceName',
+                    title: 'Начин на подаване'
+                },
+                {
+                    name: 'statusName',
+                    data: 'statusName',
+                    title: 'Статус'
+                },
+                {
+                    name: 'actions',
+                    data: "id",
+                    title: "",
+                    sortable: false,
+                    searchable: false,
+                    className: "text-center noExport",
+                    "render": function (value) {
+                        return TemplateToHtml('#templateEdit', value);
+                    }
+                }
+            ]
+        });
+         table.order([0, 'desc']);
+         }
+    }
+    function manage(id){
+        requestContent('@Url.Action("Manage")',{id:id},function(html){
+            ShowModalDialog('Управление',html);
+        });
+    }
+</script>
+<script id="templateEdit" type="text/x-handlebars-template">
+    <a href="#" class="btn btn-warning btn-sm" onclick="manage({{this}});return false;" title="Управление"><i class="fa fa-edit"></i><span class="d-none d-lg-inline"> Промени</span></a>
+</script>
+}

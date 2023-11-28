@@ -1,0 +1,71 @@
+﻿@model int
+
+<fieldset class="fs-group">
+    @*<legend>Шифри</legend>*@
+    <div class="row">
+        <div class="col-md-12 text-right pb-15">
+            <a asp-action="ReportCaseCodeAdd" asp-route-statReportId="@Model" class="btn btn-success btn-sm">
+                <i class="fa fa-plus"></i>
+                Добави
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="tblCaseCodes" class="table table-hover table-striped"></table>
+        </div>
+    </div>
+</fieldset>
+
+
+<script>
+    $(function () {
+        $('#tblCaseCodes').DataTable({
+            ajax: {
+                "url": "@Url.Action("ReportCaseCode_LoadData")",
+                "type": "POST",
+                "datatype": "json",
+                data: function (d) {
+                    d.statReportId = @(Model)
+                }
+            },
+             filter:false,
+             sort:false,
+            columns: [
+                {
+                    name: 'code',
+                    data: 'code',
+                    title: 'Шифър'
+                },
+                {
+                    name: 'label',
+                    data: 'label',
+                    title: 'Наименование'
+                },
+                {
+                    name: 'actions',
+                    data: "id",
+                    title: "",
+                    sortable: false,
+                    searchable: false,
+                    className: "text-center noExport",
+                    width:100,
+                    "render": function (value) {
+                        return TemplateToHtml('#templateEditCaseCode', value);
+                    }
+                }
+            ]
+        });
+
+        $(document).on('click', '.orderButton', function(sender){
+            postDataTablesOperation(sender,'@Url.Action("ReportCaseCode_ChangeOrder")',table);
+        });        
+    });
+</script>
+
+<script id="templateEditCaseCode" type="text/x-handlebars-template">
+    <a href="#" data-id="{{this}}" data-moveUp="true" class="orderButtonCode btn btn-info btn-sm" title="Нагоре"><i class="fa fa-angle-up"></i></a>
+    <a href="#" data-id="{{this}}" data-moveUp="false" class="orderButtonCode btn btn-primary btn-sm" title="Надолу"><i class="fa fa-angle-down"></i></a>
+    <a href="@Url.Action("ReportCaseCodeEdit")/{{this}}" class="btn btn-warning btn-sm" title="Редактирай"><i class="fa fa-edit"></i></a>
+</script>
+

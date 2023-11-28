@@ -1,0 +1,50 @@
+﻿@using SISMA.Infrastructure.Data.Models.Nomenclatures
+@model NomStatReportCol
+@{
+    ViewData["Title"] = "Добавяне на ИБД код";
+    if (Model.Id > 0)
+    {
+        ViewData["Title"] = "Редактиране на ИБД код";
+    }
+    //ViewBag.MenuItemValue = $"statreport{Model.IntegrationId}";
+}
+<div class="row">
+    <div class="col-md-6">
+        <fieldset class="fs-group">
+            <legend>Основни данни</legend>
+            <form asp-action="ReportColEdit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                @Html.HiddenFor(x => x.Id)
+                @Html.HiddenFor(x => x.StatReportId)
+
+                @Html.EditorFor(x => x.CatalogCodeId, "GenericSelect2")
+                @Html.EditorFor(x => x.Label)
+                @Html.EditorFor(x => x.IsActive)
+
+                <div class="form-group">
+                    <input type="submit" value="Запис" class="btn btn-success" />
+                    <a asp-action="ReportEdit" asp-route-id="@Model.StatReportId" asp-route-tabName="tabCols" class="btn btn-default">Назад</a>
+                    @if (Model.Id > 0)
+                    {
+                        <div class="float-right">
+                            @await Html.PartialAsync("_ShowLogOperation", new SISMA.Core.Models.ShowLogModel() { ObjectId = Model.Id.ToString() })
+                        </div>
+                    }
+                </div>
+            </form>
+        </fieldset>
+    </div>
+</div>
+
+@section scripts{
+<script>
+    $(function(){
+        $('#CatalogCodeId').change(function(){
+            //if(@(Model.Id) > 0){
+            //    return;
+            //}
+            $('#Label').val($(this).find('option:selected').text().substring(7));
+        });
+    });
+</script>
+}

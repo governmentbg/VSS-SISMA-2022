@@ -1,0 +1,62 @@
+﻿@model object
+@using System.Reflection;
+@using SISMA.Infrastructure.Data.Models.Nomenclatures;
+@using System.ComponentModel.DataAnnotations.Schema;
+
+@{
+    ViewData["Title"] = TempData.Peek("Title");
+    PropertyInfo[] properties = Model
+        .GetType()
+        .GetProperties();
+
+    PropertyInfo[] orderedProperties = properties
+        .Where(p => p.DeclaringType.Name == "BaseCommonNomenclature")
+        .Select(p => p)
+        .Union(properties.Where(p => p.DeclaringType.Name != "BaseCommonNomenclature")
+        .Select(p => p))
+        .ToArray();
+
+    string[] hiddenFields = new string[] { "Id", "OrderNumber", "CurrentLanguageDescription", "CurrentLanguageLabel", "DefaultLanguageLabel", "DefaultLanguageDescription" };
+
+    var nomInstance = (BaseCommonNomenclature)Model;
+    var historyId = string.Format("{0}_{1}", TempData.Peek("NomenclatureName").ToString(), nomInstance.Id);
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div id="saveContainer">
+                @await Html.PartialAsync("_SaveFormContent", "#saveContainer")
+                @foreach (var property in orderedProperties)
+                {
+                    if (hiddenFields.Contains(property.Name) || property.CustomAttributes.FirstOrDefault(a => a.AttributeType == typeof(ForeignKeyAttribute)) != null)
+                    {
+                        @Html.Hidden(property.Name, property.GetValue(Model, null))
+                    }
+                    else if (ViewData[property.Name + "_ddl"] != null)
+                    {
+                        @Html.Editor(property.Name, "GenericDropDown")
+                    }
+                    else
+                    {
+                        @Html.Editor(property.Name, property.GetValue(Model, null))
+
+                    }
+                }
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Запис" class="btn btn-success btn-flat" />
+                <a asp-action="Index" asp-route-nomenclatureName="@TempData.Peek("NomenclatureName")" asp-route-title="@TempData.Peek("Title")" class="btn btn-danger btn-flat">Назад</a>
+                @if (nomInstance.Id > 0)
+                {
+                    <div class="float-right">
+                        @await Html.PartialAsync("_ShowLogOperation", new SISMA.Core.Models.ShowLogModel() { ObjectId = historyId })
+                    </div>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+

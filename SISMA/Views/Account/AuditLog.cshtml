@@ -1,0 +1,115 @@
+﻿@using SISMA.Core.Models
+@model AuditLogFilterVM
+@{
+    ViewData["Title"] = "Журнал на промените";
+    ViewBag.MenuItemValue = "auditlog";
+}
+@section chelp{
+<partial name="_ContextHelp" model="@(new ContextHelpVM("Модул Конфигуриране - Меню Журнал на промените","010_auditlog"))" />
+}
+
+
+<fieldset class="filter-form">
+    <div class="row">
+        <div class="col-lg-2">
+            @Html.EditorFor(x => x.DateFrom)
+        </div>
+        <div class="col-lg-2">
+            @Html.EditorFor(x => x.DateTo)
+        </div>
+        <div class="col-lg-4">
+            @Html.EditorFor(x => x.UserName)
+        </div>
+        <div class="col-lg-4">
+            @Html.EditorFor(x => x.Object)
+        </div>        
+    </div>
+     <div class="row">
+        <div class="col-md-8">
+            <a href="#" class="btn btn-primary bottom-left" onclick="loadData(); return false;">Търсене</a>
+        </div>
+    </div>
+</fieldset>
+<div class="row">
+    <div class="col-md-12">
+        <table id="mainTable" class="table table-hover table-striped"></table>
+    </div>
+</div>
+
+@section scripts {
+<script>
+
+    function loadData() {
+        if (!checkFilterFormHasData('.filter-form')) {
+            swalOk('Въведете стойност в поне един филтър.', function () { });
+            return false;
+        }
+
+        if ($.fn.dataTable.isDataTable('#mainTable')) {
+            refreshTable('#mainTable');
+        }
+        else {
+            var table = $('#mainTable').DataTable({
+                ajax: {
+                    "url": "@Url.Action("AuditLog_ListData")",
+                    "type": "POST",
+                    "datatype": "json",
+                    data: function (d) {
+                        d.filter = {
+                            DateFrom: $('#DateFrom').val(),
+                            DateTo: $('#DateTo').val(),
+                            UserName: $('#UserName').val(),
+                            Object: $('#Object').val()
+                        }
+                    }
+                },
+                filter: false,
+                columns: [
+
+                    {
+                        name: 'dateWrt',
+                        data: "dateWrt",
+                        title: 'Дата',
+                        sortable: true,
+                        searchable: false,
+                        "render": function (value) {
+                            return JsonBGdatetime(value);
+                        }
+                    },
+                    {
+                        name: 'userFullName',
+                        data: 'userFullName',
+                        title: 'Потребител',
+                        sortable: true,
+                        searchable: true
+                    },
+                    {
+                        name: 'operation',
+                        data: 'operation',
+                        title: 'Операция',
+                        sortable: true,
+                        searchable: false                       
+                    },
+                    {
+                        name: 'object',
+                        data: 'object',
+                        title: 'Обект',
+                        sortable: true,
+                        searchable: false,
+                         render:function(a,b,item,c){
+                             return TemplateToHtml('#templateObject', item);
+                        }
+                    }
+                ]
+            });
+            table.order([0, 'desc']);
+        }
+    }
+</script>
+<script id="templateObject" type="text/x-handlebars-template">
+    {{object}}
+    {{#if url}}
+        <a href="{{url}}" title="Преглед" target="_blank"><i class="fa fa-search"></i></a>    
+    {{/if}}    
+</script>
+}

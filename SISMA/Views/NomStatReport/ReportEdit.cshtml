@@ -1,0 +1,145 @@
+﻿@using SISMA.Infrastructure.Constants
+@using SISMA.Infrastructure.Data.Models.Nomenclatures
+@model NomStatReport
+@{
+    ViewData["Title"] = "Добавяне на статистически отчет";
+    if (Model.Id > 0)
+    {
+        ViewData["Title"] = "Редактиране на статистически отчет";
+    }
+    ViewBag.MenuItemValue = $"nomstatreport{Model.IntegrationId}";
+    string tabName = (string)ViewBag.TabName;
+}
+
+<nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <a class="nav-item nav-link active" id="nav-main-tab" data-toggle="tab" href="#tabMainData" role="tab" aria-controls="nav-home" aria-selected="true">
+            Основни данни
+        </a>
+        @if (Model.Id > 0)
+        {
+            <a class="nav-item nav-link" id="nav-cols-tab" data-toggle="tab" href="#tabCols" role="tab" aria-controls="nav-profile" aria-selected="false">
+                ИБД кодове
+            </a>
+            @if (Model.IntegrationId == NomenclatureConstants.Integrations.EISS)
+            {
+                <a class="nav-item nav-link" id="nav-codes-tab" data-toggle="tab" href="#tabCaseCodes" role="tab" aria-controls="nav-profile" aria-selected="false">
+                    Статистически шифри
+                </a>
+            }
+        }
+    </div>
+</nav>
+<div class="tab-content" id="nav-tabContent">
+    <div class="tab-pane fade show active" id="tabMainData" role="tabpanel" aria-labelledby="nav-main-tab">
+
+        <div class="row">
+            <div class="col-md-6">
+                <fieldset class="fs-group">
+
+                    <form asp-action="ReportEdit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        @Html.HiddenFor(x => x.Id)
+                        @Html.HiddenFor(x => x.IntegrationId)
+                        @Html.HiddenFor(x => x.EntityList)
+
+                        @Html.EditorFor(x => x.ReportCategoryId, "GenericDropDown")
+                        @Html.EditorFor(x => x.CatalogId, "GenericDropDown")
+                        @Html.EditorFor(x => x.ReportTypeId, "GenericDropDown")
+                        @Html.EditorFor(x => x.Label)
+                        @Html.EditorFor(x => x.RowLabel)
+                        @Html.EditorFor(x => x.Description)
+
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Html.EditorFor(x => x.SecondIntegrationId, "GenericDropDown")
+                            </div>
+                            <div class="col-md-8">
+                                @Html.EditorFor(x => x.SecondCatalogId, "GenericDropDown")
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                @Html.EditorFor(x => x.SecondCatalogCodeId, "GenericDropDown")
+                            </div>
+                            <div class="col-md-4">
+                                @Html.EditorFor(x => x.RatioMultiplier,"Int32")
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                @Html.EditorFor(x => x.DateStart)
+                            </div>
+                            <div class="col-md-4">
+                                @Html.EditorFor(x => x.DateEnd)
+                            </div>
+                            <div class="col-md-4">
+                                @Html.EditorFor(x => x.IsActive)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="submit" value="Запис" class="btn btn-success" />
+                            <a asp-action="ReportIndex" asp-route-integrationid="@Model.IntegrationId" class="btn btn-default">Назад</a>
+                            @if (Model.Id > 0)
+                            {
+                                <div class="float-right">
+                                    @await Html.PartialAsync("_ShowLogOperation", new SISMA.Core.Models.ShowLogModel() { ObjectId = Model.Id.ToString() })
+                                </div>
+                            }
+                        </div>
+                    </form>
+
+                    @if (Model.Id > 0)
+                    {
+                        <partial name="../StatReport/_EntityList" model="@Model.IntegrationId" />
+                    }
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tabCols" role="tabpanel" aria-labelledby="nav-cols-tab">
+        <partial name="_ReportCol" model="@Model.Id" />
+    </div>
+    <div class="tab-pane fade" id="tabCaseCodes" role="tabpanel" aria-labelledby="nav-codes-tab">
+        <partial name="_ReportCaseCode" model="@Model.Id" />
+    </div>
+</div>
+
+
+
+@section scripts{
+<style>
+    .dataTables_buttons {
+        display: none;
+    }
+</style>
+<script>
+    $(function(){
+        var url = document.location.toString();
+        if (url.match('#')) {
+            $('.nav-tabs a[href="#' + url.split('#')[1] + '"]').tab('show');
+        }
+
+        @if(!string.IsNullOrEmpty(tabName))
+        {
+                <text>
+                    $('.nav-tabs a[href="#@(tabName)"]').tab('show');
+                </text>
+        }
+
+        $('#SecondIntegrationId').change(function(){
+            requestCombo('@Url.Action("GetCatalogByIntegration","Ajax")',{integrationId:$(this).val()},'#SecondCatalogId','@Model.SecondCatalogId',function(){
+            $('#SecondCatalogId').trigger('change');
+            });
+        }).trigger('change');
+
+        $('#SecondCatalogId').change(function(){
+            requestCombo('@Url.Action("GetCatalogCodeByCatalog","Ajax")',{catalogId:$(this).val()},'#SecondCatalogCodeId','@Model.SecondCatalogCodeId');
+        }).trigger('change');
+
+    });
+</script>
+}

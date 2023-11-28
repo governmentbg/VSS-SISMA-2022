@@ -1,0 +1,12 @@
+﻿@model string
+@{
+    var fieldName = ViewData.TemplateInfo.HtmlFieldPrefix.Replace(".", "_") + "_ekatte";
+}
+
+<div class="ekatte-container">
+    <label asp-for="@Model" class="control-label io-req"></label>
+    <input id="@fieldName" class="form-control ekatte-control" />
+
+    <input asp-for="@Model" type="hidden" class="ekatte-val" />
+    <span asp-validation-for="@Model" class="text-danger"></span>
+</div>

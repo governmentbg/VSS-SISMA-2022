@@ -1,0 +1,80 @@
+﻿@model int
+
+<fieldset class="fs-group">
+    @*<legend>Кодове по ИБД</legend>*@
+    <div class="row">
+        <div class="col-md-12 text-right pb-15">
+            <a asp-action="ReportColAdd" asp-route-statReportId="@Model" class="btn btn-success btn-sm">
+                <i class="fa fa-plus"></i>
+                Добави
+            </a>       
+            <a asp-action="ReportColGroup" asp-route-statReportId="@Model" class="btn btn-warning btn-sm">
+                <i class="fa fa-check"></i>
+                Избери
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="mainTable" class="table table-hover table-striped"></table>
+        </div>
+    </div>
+</fieldset>
+
+
+<script>
+    $(function () {
+        var table = $('#mainTable').DataTable({
+            ajax: {
+                "url": "@Url.Action("ReportCol_LoadData")",
+                "type": "POST",
+                "datatype": "json",
+                data: function (d) {
+                    d.statReportId = @(Model)
+                }
+            },
+             filter:false,
+             sort:false,
+            columns: [
+                {
+                    name: 'ibdCode',
+                    data: 'ibdCode',
+                    title: 'ИБД'
+                },
+                {
+                    name: 'label',
+                    data: 'label',
+                    title: 'Наименование'
+                },
+                {
+                    name: 'actions',
+                    data: "id",
+                    title: "",
+                    sortable: false,
+                    searchable: false,
+                    className: "text-center noExport",
+                    width:260,
+                    "render": function (value) {
+                        return TemplateToHtml('#templateEditCol', value);
+                    }
+                }
+            ]
+        });
+
+        $(document).on('click', '.orderButton', function(sender){
+            postDataTablesOperation(sender,'@Url.Action("ReportCol_ChangeOrder")',table);
+        });
+         $(document).on('click', '.removeButton', function(sender){
+            postDataTablesOperation(sender,'@Url.Action("ReportCol_Remove")',table);
+        });
+    });
+
+</script>
+
+<script id="templateEditCol" type="text/x-handlebars-template">
+    <a href="#" data-id="{{this}}" data-moveUp="true" class="orderButton btn btn-info btn-sm" title="Нагоре"><i class="fa fa-angle-up"></i></a>
+    <a href="#" data-id="{{this}}" data-moveUp="false" class="orderButton btn btn-primary btn-sm" title="Надолу"><i class="fa fa-angle-down"></i></a>
+    <a href="#" data-id="{{this}}" class="removeButton btn btn-danger btn-sm" title="Премахване на ИБД код"><i class="fas fa-trash"></i></a>
+    <a href="@Url.Action("ReportColEdit")/{{this}}" class="btn btn-warning btn-sm" title="Редактирай"><i class="fa fa-edit"></i> Редакция</a>
+</script>
+

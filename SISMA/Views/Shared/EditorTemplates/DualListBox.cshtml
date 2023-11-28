@@ -1,0 +1,6 @@
+﻿@model string[]
+@{
+    var label = ViewData["label"];
+}
+<select asp-for="@Model" data-label="@label" multiple="multiple" size="10">
+</select>

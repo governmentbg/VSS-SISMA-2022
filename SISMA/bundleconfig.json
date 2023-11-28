@@ -1,0 +1,87 @@
+﻿[
+  {
+    "outputFileName": "wwwroot/js/prod/head.min.js",
+    "inputFiles": [
+      "wwwroot/lib/adminlte/plugins/jquery/jquery.min.js",
+      "wwwroot/lib/adminlte/plugins/jquery-ui/jquery-ui.js",
+      "wwwroot/lib/jquery-validation/dist/jquery.validate.js",
+      "wwwroot/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
+      "wwwroot/lib/adminlte/plugins/bootstrap4-duallistbox/jquery.bootstrap-duallistbox.min.js",
+      "wwwroot/lib/open.layers/open.layers.6.13.0.js"
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/css/prod/site.min.css",
+    "inputFiles": [
+      "wwwroot/lib/adminlte/plugins/select2/css/select2.css",
+      "wwwroot/lib/adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css",
+      "wwwroot/lib/adminlte/plugins/fontawesome-free/css/all.min.css",
+      "wwwroot/lib/adminlte/css/adminlte.css",
+      "wwwroot/lib/adminlte/css/alt/adminlte.components.css",
+      "wwwroot/lib/adminlte/css/alt/adminlte.core.css",
+      "wwwroot/lib/adminlte/css/alt/adminlte.extra-components.css",
+      "wwwroot/lib/adminlte/plugins/toastr/toastr.min.css",
+      "wwwroot/lib/adminlte/plugins/pace-progress/themes/blue/pace-theme-material.css",
+      "wwwroot/lib/adminlte/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css",
+      //"wwwroot/lib/adminlte/plugins/datatables-select/css/select.dataTables.css",
+      "wwwroot/lib/adminlte/plugins/datatables-buttons/css/buttons.bootstrap4.min.css",
+      "wwwroot/lib/datepicker/css/bootstrap-datepicker.min.css",
+      "wwwroot/lib/adminlte/plugins/daterangepicker/daterangepicker.css",
+      "wwwroot/lib/adminlte/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css",
+      "wwwroot/lib/adminlte/plugins/bootstrap4-duallistbox/bootstrap-duallistbox.min.css",
+      "wwwroot/lib/adminlte/plugins/jquery-ui/jquery-ui.min.css",
+      "wwwroot/lib/adminlte/plugins/sweetalert2/sweetalert2.min.css",
+      "wwwroot/lib/lib/open.layers/open.layers.6.13.0.css",
+      //"wwwroot/lib/sweetalert2/dist/sweetalert2.css",
+      //"wwwroot/css/ra-theme-overload.css",
+      "wwwroot/css/site.css"
+      //"wwwroot/css/exception.css",
+      //"wwwroot/css/application.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/prod/site.min.js",
+    "inputFiles": [
+      "wwwroot/lib/adminlte/plugins/select2/js/select2.js",
+      "wwwroot/lib/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js",
+      "wwwroot/lib/adminlte/js/adminlte.js",
+      "wwwroot/lib/adminlte/plugins/toastr/toastr.min.js",
+      "wwwroot/lib/adminlte/plugins/pace-progress/pace.min.js",
+      "wwwroot/lib/adminlte/plugins/datatables/jquery.dataTables.min.js",
+      "wwwroot/lib/adminlte/plugins/jszip/jszip.min.js",
+      "wwwroot/lib/pdfmake/pdfmake.min.js",
+      "wwwroot/lib/pdfmake/vfs_fonts.js",
+      "wwwroot/lib/adminlte/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js",
+      "wwwroot/lib/adminlte/plugins/datatables-buttons/js/dataTables.buttons.min.js",
+      "wwwroot/lib/adminlte/plugins/datatables-buttons/js/buttons.bootstrap4.min.js",
+      "wwwroot/lib/adminlte/plugins/datatables-buttons/js/buttons.colVis.min.js",
+      "wwwroot/lib/adminlte/plugins/datatables-buttons/js/buttons.html5.min.js",
+      "wwwroot/lib/adminlte/plugins/datatables-buttons/js/buttons.print.min.js",
+      "wwwroot/lib/adminlte/plugins/sweetalert2/sweetalert2.all.js",
+      "wwwroot/lib/datepicker/js/bootstrap-datepicker.min.js",
+      "wwwroot/lib/datepicker/locales/bootstrap-datepicker.bg.min.js",
+      "wwwroot/lib/adminlte/plugins/moment/moment.min.js",
+      "wwwroot/lib/adminlte/plugins/moment/locale/bg.js",
+      "wwwroot/lib/adminlte/plugins/daterangepicker/daterangepicker.js",
+      "wwwroot/lib/adminlte/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js",
+      "wwwroot/lib/chartjs-3.7.1/chart.min.js",
+      "wwwroot/js/handlebars.js",
+      "wwwroot/js/jquery.form.js",
+      "wwwroot/js/init.js",
+      "wwwroot/js/site.js",
+      "wwwroot/js/jquery.override-validator.js",
+      "wwwroot/js/ekatte-loader.js"
+
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  }
+]

@@ -1,0 +1,301 @@
+﻿@using SISMA.Core.Models.Common
+@model FilterEkatteItemVM
+@{
+    ViewData["Title"] = "Достъпност до съдилищата";
+    ViewBag.MenuItemValue = "cityDistance";
+}
+@section chelp{
+<partial name="_ContextHelp" model="@(new ContextHelpVM("Модул Справики-Меню Достъпност до съдилища","005_citydistance"))" />
+}
+<fieldset class="fs-group">
+    <legend>Търсене</legend>
+    <div class="row">
+        @*<div class="col-md-3">
+            @Html.EditorFor(x=>x.MunicipalityId,"GenericDropDown")
+            </div>*@
+        <div class="col-md-4">
+            @Html.EditorFor(x=>x.EkatteCode,"Ekatte")
+        </div>
+        <div class="col-md-4">
+            @Html.EditorFor(x=>x.DistanceType,"GenericDropDown")
+        </div>
+        <div class="col-lg-4 col-md-12">
+            @Html.EditorFor(x=>x.CourtTypes,"GenericSelect2String")
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 text-left pb-15">
+            <button type="button" class="btn btn-primary" id="btnFilter" onclick="loadData();return false;" value="Филтриране" title="Филтриране">
+                Търсене
+                <i class="fa fa-search" title="Търсене"></i>
+            </button>
+        </div>
+    </div>
+</fieldset>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="mainTable" class="table table-hover table-striped"></table>
+    </div>
+</div>
+
+<div id="map" style="display:block;height:500px;width:100%"><div id="popup"></div></div>
+
+@section scripts {
+<style>
+    .ol-rotate-reset, .ol-attribution {
+        display: none;
+    }
+</style>
+<script>
+    $(function(){
+        initEkatte();
+        setTimeout(function(){
+        let ctIds = '@(Model.CourtTypes)'.split(',');
+            $('#CourtTypes').val(ctIds).trigger('change');
+        },500);
+
+    });
+    function loadData(){
+        postContent('@Url.Action("CityDistance_Data")',{
+        filter:{
+                MunicipalityId:$('#MunicipalityId').val(),
+                EkatteCode:$('#EkatteCode').val(),
+                DistanceType:$('#DistanceType').val(),
+                CourtTypes:$('#CourtTypes').val().join(',')
+            }
+        },function(data){
+                showDataTable(data);
+                showMapData(data);
+        });
+    }
+    function showDataTable(data){
+            if($.fn.dataTable.isDataTable('#mainTable')){
+                $('#mainTable').DataTable().columns().clear();
+                $('#mainTable').DataTable().clear().destroy();
+                $('#mainTable').empty();
+            }
+            let tblData = $('#mainTable').DataTable({
+                "aaData": data[0].distances,
+                buttons:[],
+                //"bSort": false,
+                "aoColumns":[
+                //{
+                //    name: 'cityName',
+                //    data: 'cityName',
+                //    title: 'Населено място',
+                //    sortable: false,
+                //},
+                //{
+                //    name: 'municipalityName',
+                //    data: 'municipalityName',
+                //    title: 'Община',
+                //    sortable: false,
+                //},
+                {
+                    name: 'courtName',
+                    data: 'courtName',
+                    title: 'Съд',
+                    //sortable: false,
+                    //render:function(item){
+                    //     return TemplateToHtml('#templateCourt', item.distances);
+                    //}
+                },
+                {
+                    name: 'distance',
+                    //data: 'distances',
+                    data: 'distance',
+                    title: 'Разстояние, км',
+                    //sortable: false,
+                    //render:function(items){
+                    //     return TemplateToHtml('#templateDistance', items);
+                    //}
+                },
+                {
+                    name: 'duration',
+                    data: 'duration',
+                    title: 'Време, мин.',
+                    //sortable: false,
+                    //render:function(items){
+                    //     return TemplateToHtml('#templateDuration', items);
+                    //}
+                }
+                ],
+                bServerSide : false,
+                "retrieve": true,
+                "paging": false,
+                filter:false
+            });
+    }
+
+    function initMap(){
+        let tileLayer = new ol.layer.Tile({
+            source: new ol.source.OSM()
+        });
+
+        map = new ol.Map({
+            target: document.getElementById('map'),
+            controls: ol.control.defaults(),//.extend([new ClearFeaturesControl()]),
+            layers: [tileLayer],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([23.3242, 42.6982]),
+                zoom: 12
+            })
+        });
+
+        const element = document.getElementById('popup');
+
+          const popup = new ol.Overlay({
+            element: element,
+            positioning: 'bottom-center',
+            stopEvent: false,
+          });
+          map.addOverlay(popup);
+
+          // display popup on click
+          map.on('click', function (evt) {
+            const feature = map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+              return feature;
+            });
+            if (feature) {
+              popup.setPosition(evt.coordinate);
+              let objData = feature.get('data');
+              let popupContent = '';
+              if(feature.get('mapType') == 'city'){
+                  popupContent = TemplateToHtml('#templatePopupCity',objData )
+              }else{
+                  popupContent = TemplateToHtml('#templatePopupCourt',objData )
+              }
+              try{
+                $(element).popover('dispose');
+              }catch(e){}
+              //debugger;
+              $(element).popover({
+                placement: 'top',
+                html: true,
+                content: popupContent
+              });
+              $(element).popover('show');
+            } else {
+              $(element).popover('dispose');
+            }
+          });
+
+          // change mouse cursor when over marker
+          map.on('pointermove', function (e) {
+            const pixel = map.getEventPixel(e.originalEvent);
+            const hit = map.hasFeatureAtPixel(pixel);
+            map.getTarget().style.cursor = hit ? 'pointer' : '';
+          });
+          // Close the popup when the map is moved
+          map.on('movestart', function () {
+            $(element).popover('dispose');
+          });
+    }
+
+    let map = null;
+    let vectorLayer = null;
+
+    function showMapData(data){
+        if(!map){
+            initMap();
+        }
+        let crts = [];
+        let vectorSource = new ol.source.Vector();
+        $(data).each(function(i,obj){
+                $(obj.distances).each(function(i,crt){
+                     var featureCourt = new ol.Feature(
+                    {
+                      geometry: new ol.geom.Point(ol.proj.fromLonLat([parseFloat(crt.longitute), parseFloat(crt.latitude)])),
+                      name: crt.courtName,
+                      mapType:'court',
+                      data:crt
+                    });
+
+                    featureCourt.setStyle(
+                      new ol.style.Style({
+                        image: new ol.style.Icon({
+                          crossOrigin: 'anonymous',
+                          // For Internet Explorer 11
+                          size: [45, 45],
+                          src: '/img/marker-court.png'
+                        })
+                      })
+                    );
+
+                    if(!crts.includes(crt.id)){
+                        vectorSource.addFeature(featureCourt);
+                        crts.push(crt.id);
+                    }
+                  });
+
+                  var feature = new ol.Feature(
+                {
+                  geometry: new ol.geom.Point(ol.proj.fromLonLat([parseFloat(obj.longitute.trim()), parseFloat(obj.latitude.trim())])),
+                  name: obj.cityName,
+                  mapType:'city',
+                  data:obj,
+                //  id:'city'+obj.id
+                });
+
+                feature.setStyle(
+                  new ol.style.Style({
+                    image: new ol.style.Icon({
+                      crossOrigin: 'anonymous',
+                      // For Internet Explorer 11
+                      size: [45, 45],
+                      src: '/img/marker-city.png'
+                    })
+                  })
+                );
+                //if(vectorSource.getFeatureById(feature.id) == null){
+                    vectorSource.addFeature(feature);
+                //}
+            });
+
+            if(vectorLayer){
+                map.removeLayer(vectorLayer);
+            }
+
+            vectorLayer = new ol.layer.Vector({
+              source: vectorSource
+            });
+            map.addLayer(vectorLayer);
+            map.getView().fit(vectorSource.getExtent(), { padding: [50, 50, 50, 50] });
+            //debugger;
+            let zoom = map.getView().getZoom();
+            if(zoom > 15){
+              map.getView().setZoom(15)
+            }
+     }
+</script>
+
+<script id="templateCourt" type="text/x-handlebars-template">
+    {{#each this}}
+       {{courtName}}<br/>
+    {{/each}}
+</script>
+<script id="templateDistance" type="text/x-handlebars-template">
+    {{#each this}}
+       {{distance}}<br/>
+    {{/each}}
+</script>
+<script id="templateDuration" type="text/x-handlebars-template">
+    {{#each this}}
+       {{duration}}<br/>
+    {{/each}}
+</script>
+
+
+<script id="templatePopupCity" type="text/x-handlebars-template">
+    <h6>{{cityName}}</h6>
+    {{#each distances}}
+        <br/>
+            <b>{{courtName}}:</b><br/>{{distance}} km, {{duration}} min
+    {{/each}}
+</script>
+<script id="templatePopupCourt" type="text/x-handlebars-template">
+    <b>{{courtName}}</b>
+</script>
+}

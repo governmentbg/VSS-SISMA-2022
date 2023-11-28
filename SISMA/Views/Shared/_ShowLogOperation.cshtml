@@ -1,0 +1,138 @@
+﻿@model SISMA.Core.Models.ShowLogModel
+@{
+    string action = ViewContext.RouteData.Values["action"].ToString();
+    string controller = ViewContext.RouteData.Values["controller"].ToString();
+    if (!string.IsNullOrEmpty(Model.Action))
+    {
+        action = Model.Action;
+    }
+    if (!string.IsNullOrEmpty(Model.Controller))
+    {
+        controller = Model.Controller;
+    }
+    var title = "История на промените";
+    var btnLabel = "Покажи история на промените";
+    if (!string.IsNullOrEmpty(Model.Title))
+    {
+        title = Model.Title;
+
+    }
+    if (!string.IsNullOrEmpty(Model.ButtonLabel))
+    {
+        btnLabel = Model.ButtonLabel;
+
+    }
+}
+@if (Model.ObjectId != "0")
+{
+
+    <a href="#" title="История на промените" class="btn btn-sm btn-primary" onclick="LoadLogOperation();return false;"><i class="fa fa-search"></i></a>
+
+    <div id="historyContainer" style="display:none;z-index:1000;" title="@title">
+        <table border="0" width="100%">
+            <tr>
+                <td class="tdList" valign="top" width="50%">
+                    <div class="grid">
+                    </div>
+                    <div class="pager">
+                    </div>
+                </td>
+                <td class="tdHTML log-operation-container" valign="top" width="50%" style="padding-left: 20px;"></td>
+            </tr>
+        </table>
+    </div>
+
+    <script type="text/javascript">
+        function LoadLogOperation() {
+            MakeBigModalDialog('div#historyContainer');
+
+            ShowLogs(1);
+        }
+
+        function ShowLogs(page_no) {
+            $.ajax({
+                dataType: "json",
+                cache: false,
+                url: '@Url.Action("Get_LogOperation", "Ajax")',
+                data: { controller_name: '@controller', action_name: '@action', objectId: '@Model.ObjectId' },
+                success: function (data) {
+                    if (data.length > 0) {
+                        var _template = '<table class="tblGrid table table-bordered table-striped"><tr><th>Дата</th><th>Операция</th><th>Потребител</th><th></th></tr>';
+                        _template += '{{#each this}}<tr><td>{{oper_date}}</td><td>{{oper}}</td><td>{{user}}</td><td><a href="#" title="Преглед" onclick="ShowLogOperationCompared({{id}},this);return false;"><i class="fas fa-search"></i></a></td></tr>{{/each}}'
+                        _template += '</table>';
+                        var _d = MakeJsonPager(data, 'div#historyContainer div.pager', page_no, 'ShowLogs');;
+                        $("div#historyContainer div.grid").html(HandlebarsToHtml(_template, _d));
+                        $("div#historyContainer table.tblGrid").addClass("grid");
+
+                    } else {
+                        $("div#historyContainer div.grid").html("Няма намерени данни.");
+                        $("div#historyContainer div.pager").html('');
+                    }
+                }
+            });
+        }
+
+        function ShowLogOperation(id, sender) {
+
+            $("div#historyContainer TD.tdList td").removeClass("selected");
+            $.ajax({
+                type: 'GET',
+                async: true,
+                cache: false,
+                url: '@Url.Action("Get_LogOperationHTML", "Ajax")',
+                data: { id: id },
+                success: function (data) {
+                    $("div#historyContainer TD.tdHTML").html(htmlUnescape(data));
+                    $(sender).closest('tr').find('td').addClass("selected");
+                    return false;
+                }
+            });
+            return false;
+        }
+        function ShowLogOperationCompared(id, sender) {
+
+            $("div#historyContainer TD.tdList td").removeClass("selected");
+            $.ajax({
+                type: 'GET',
+                async: true,
+                cache: false,
+                url: '@Url.Action("Get_LogOperationHTML", "Ajax")',
+                data: { id },
+                success: function (data) {
+                    $("div#historyContainer TD.tdHTML").html(TemplateToHtml('#tmplLogOperUserData',data));
+                    $(sender).closest('tr').find('td').addClass("selected");
+                    return false;
+                }
+            });
+            return false;
+        }
+        function SaveChangeInformation(changeDescription) {
+
+            $.ajax({
+                type: 'POST',
+                async: false,
+                cache: false,
+                url: '@Url.Action("SaveChange_LogOperation", "Ajax")',
+                data: { controller_name: '@controller', action_name: '@action', object_key: '@Model.ObjectId', changeDescription: changeDescription }
+            });
+
+        }
+    </script>
+
+    <script id="tmplLogOperUserData" type="text/x-handlebars-template">
+        <ul class="log-oper-user-data">
+        {{#each this}}
+        <li><span>{{key}}</span>{{value}}
+            {{#if items}}
+                <ul class="log-oper-user-subdata">
+                {{#each items}}
+                    <li><span>{{key}}</span>{{value}}</li>
+                {{/each}}
+                </ul>
+            {{/if}}
+        </li>
+        {{/each}}
+        </ul>
+    </script>
+
+}
