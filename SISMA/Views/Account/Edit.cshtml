@@ -1,0 +1,59 @@
+﻿@using SISMA.Core.Models.Identity
+@model AccountVM
+@inject SISMA.Infrastructure.Contracts.IUserContext userContext
+@{
+    if (!string.IsNullOrEmpty(Model.Id))
+    {
+        ViewData["Title"] = "Редакция на потребител";
+    }
+    else
+    {
+        ViewData["Title"] = "Регистриране на потребител";
+    }
+     ViewBag.MenuItemValue = "accounts";
+}
+<div class="row">
+    <div class="col-lg-8 col-md-12">
+        @using (Html.BeginForm())
+        {
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <fieldset class="fs-group">
+                <legend>Основни данни</legend>
+                @Html.HiddenFor(x => x.Id)
+
+                <div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        @Html.EditorFor(x => x.UIC)
+                    </div>
+                    <div class="col-lg-9 col-md-6  col-sm-12">
+                        @Html.EditorFor(x => x.FullName)
+                    </div>
+                </div>
+                @Html.EditorFor(x => x.Email, "String")
+                @Html.EditorFor(x => x.IsActive)
+            </fieldset>
+            @if (!string.IsNullOrEmpty(Model.Id))
+            {
+                <fieldset class="fs-group">
+                    <legend>Роли</legend>
+                    @Html.EditorFor(x => x.Roles)
+                </fieldset>
+            }
+
+
+            <div class="form-group">
+                <input type="submit" value="Запис" class="btn btn-success" />
+                <a asp-action="Index" class="btn btn-default">Назад</a>
+                @if (!string.IsNullOrEmpty(Model.Id))
+                {
+                    <div class="float-right">
+                        @await Html.PartialAsync("_ShowLogOperation", new SISMA.Core.Models.ShowLogModel() { ObjectId = Model.Id.ToString() })
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+

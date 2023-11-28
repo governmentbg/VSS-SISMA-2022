@@ -1,0 +1,165 @@
+﻿@using SISMA.Infrastructure.Constants
+@inject SISMA.Infrastructure.Contracts.IUserContext userContext
+@model string
+
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column nav-flat text-sm" data-widget="treeview" role="menu" data-accordion="false">
+        <menulistitem menu="home" class="nav-item">
+            <a href="@Url.Action("Index", "Home")" class="nav-link">
+                <i class="nav-icon fas fa-home"></i>
+                <p>
+                    Начало
+                </p>
+            </a>
+        </menulistitem>
+        @if (userContext.IsUserInRole(AccountConstants.Roles.DATA))
+        {
+            <menulistitem menu="reportdata" class="nav-item">
+                <a href="@Url.Action("Index","Data")" class="nav-link">
+                    <i class="nav-icon fas fa-cloud-upload-alt"></i>
+                    <p>
+                        Входящи данни
+                    </p>
+                </a>
+            </menulistitem>
+        }
+        @if (userContext.IsUserInRole(AccountConstants.Roles.REPORT))
+        {
+            <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fa fa-chart-bar"></i>
+                    <p>
+                        Справки
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <menulistitem menu="statreport@(NomenclatureConstants.Integrations.EISS)" class="nav-item">
+                        <a href="@Url.Action("Index","StatReport",new{integrationId = NomenclatureConstants.Integrations.EISS})" class="nav-link">
+                            Статистически отчети ЕИСС
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="statreport@(NomenclatureConstants.Integrations.EDIS)" class="nav-item">
+                        <a href="@Url.Action("Index","StatReport",new{integrationId = NomenclatureConstants.Integrations.EDIS})" class="nav-link">
+                            Статистически отчети ЕДИС
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="statreport@(NomenclatureConstants.Integrations.CISSS)" class="nav-item">
+                        <a href="@Url.Action("Index","StatReport",new{integrationId = NomenclatureConstants.Integrations.CISSS})" class="nav-link">
+                            Статистически отчети ЦИССС
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="statreport@(NomenclatureConstants.Integrations.UIS)" class="nav-item">
+                        <a href="@Url.Action("Index","StatReport",new{integrationId = NomenclatureConstants.Integrations.UIS})" class="nav-link">
+                            Статистически отчети УИС
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="statreport@(NomenclatureConstants.Integrations.EISPP)" class="nav-item">
+                        <a href="@Url.Action("Index","StatReport",new{integrationId = NomenclatureConstants.Integrations.EISPP})" class="nav-link">
+                            Статистически отчети ЕИСПП
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="statreport@(NomenclatureConstants.Integrations.NSI)" class="nav-item">
+                        <a href="@Url.Action("Index","StatReport",new{integrationId = NomenclatureConstants.Integrations.NSI})" class="nav-link">
+                            Статистически отчети НСИ
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="cityDistance" class="nav-item">
+                        <a href="@Url.Action("CityDistance","Data")" class="nav-link">
+                            Достъпност до съдилищата
+                        </a>
+                    </menulistitem>
+                </ul>
+            </li>
+        }
+        @if (userContext.IsUserInRole(AccountConstants.Roles.DATA))
+        {
+            <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fa fa-cog"></i>
+                    <p>
+                        Управление
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <menulistitem menu="nomstatreport@(NomenclatureConstants.Integrations.EISS)" class="nav-item">
+                        <a href="@Url.Action("ReportIndex","NomStatReport",new{integrationId = NomenclatureConstants.Integrations.EISS})" class="nav-link">
+                            Статистически отчети ЕИСС
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="nomstatreport@(NomenclatureConstants.Integrations.EDIS)" class="nav-item">
+                        <a href="@Url.Action("ReportIndex","NomStatReport",new{integrationId = NomenclatureConstants.Integrations.EDIS})" class="nav-link">
+                            Статистически отчети ЕДИС
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="nomstatreport@(NomenclatureConstants.Integrations.CISSS)" class="nav-item">
+                        <a href="@Url.Action("ReportIndex","NomStatReport",new{integrationId = NomenclatureConstants.Integrations.CISSS})" class="nav-link">
+                            Статистически отчети ЦИССС
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="nomstatreport@(NomenclatureConstants.Integrations.UIS)" class="nav-item">
+                        <a href="@Url.Action("ReportIndex","NomStatReport",new{integrationId = NomenclatureConstants.Integrations.UIS})" class="nav-link">
+                            Статистически отчети УИС
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="nomstatreport@(NomenclatureConstants.Integrations.EISPP)" class="nav-item">
+                        <a href="@Url.Action("ReportIndex","NomStatReport",new{integrationId = NomenclatureConstants.Integrations.EISPP})" class="nav-link">
+                            Статистически отчети ЕИСПП
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="nomstatreport@(NomenclatureConstants.Integrations.NSI)" class="nav-item">
+                        <a href="@Url.Action("ReportIndex","NomStatReport",new{integrationId = NomenclatureConstants.Integrations.NSI})" class="nav-link">
+                            Статистически отчети НСИ
+                        </a>
+                    </menulistitem>
+                </ul>
+            </li>
+        }
+        @if (userContext.IsUserInRole(AccountConstants.Roles.ADMIN))
+        {
+            <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon fa fa-tools"></i>
+                    <p>
+                        Конфигуриране
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <menulistitem menu="accounts" class="nav-item">
+                        <a href="@Url.Action("Index","Account")" class="nav-link">
+                            Потребители
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="reportcategory" class="nav-item">
+                        <a href="@Url.Action("ReportCategoryIndex","NomStatReport")" class="nav-link">
+                            Категории отчети
+                        </a>
+                    </menulistitem>
+                    <menulistitem menu="auditlog" class="nav-item">
+                        <a href="@Url.Action("AuditLog","Account")" class="nav-link">
+                            Журнал на промените
+                        </a>
+                    </menulistitem>
+                </ul>
+            </li>
+        }
+    </ul>
+</nav>
+<script>
+    $(function () {
+        var currentMenuItem = '@ViewBag.MenuItemValue';
+        if (currentMenuItem.length > 0) {
+            var menuItem = $('ul.nav-sidebar li[data-menuitem="' + currentMenuItem + '"] a.nav-link:first');
+            menuItem.addClass('active');
+            var parent = menuItem.parents('li.has-treeview:first');
+
+            if (parent) {
+                parent.addClass('menu-open');
+                parent.find('a.nav-link:first').addClass('active');
+                parent.find('ul.nav-treeview').show();
+            }
+        }
+    });
+</script>

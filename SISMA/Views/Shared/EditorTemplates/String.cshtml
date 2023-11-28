@@ -1,0 +1,11 @@
+﻿@using Helpers.GenericIO
+@model string
+@{
+    var val = Model.Decode();
+}
+
+<div class="form-group">
+    <label asp-for="@Model" class="control-label"></label>
+    @Html.TextBox("", val,new { @class="form-control"})
+    <span asp-validation-for="@Model" class="text-danger"></span>
+</div>

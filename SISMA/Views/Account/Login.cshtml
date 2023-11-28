@@ -1,0 +1,126 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using SISMA.Core.Models.Identity
+@using SISMA.Infrastructure.Data.Models.Identity
+
+@inject SignInManager<ApplicationUser> SignInManager
+@model LoginVM
+@{
+    Layout = "~/Views/Shared/_MasterLayout.cshtml";
+    ViewData["Title"] = "СИСМА | Вход";
+    ViewData["menu"] = "login";
+}
+
+@section head{
+<style>
+    .login-container {
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100vh;
+        background: url('/img/login-bg.png') no-repeat center center fixed;
+        background-position: center;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+    }
+
+    div.login-controls {
+        display: block;
+        position: absolute;
+        top: 20%;
+        left: 55%;
+    }
+
+    footer.login {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('/img/login-footer-bg.png');
+        background-repeat: repeat-x;
+        height: 125px;
+    }
+
+        footer.login .ft-esf {
+            display: block;
+            position: absolute;
+            left: 50px;
+            top: 15px;
+        }
+
+        footer.login .ft-title {
+            display: block;
+            position: absolute;
+            left: 25%;
+            right: 25%;
+            top: 15px;
+        }
+
+        footer.login .ft-opdu {
+            display: block;
+            position: absolute;
+            right: 50px;
+            top: 15px;
+        }
+
+    .btn-login{
+        color: #34075a;
+        background-color: #fff;
+        border-color: #aaa;
+        box-shadow: none;
+        font-weight:bolder;
+    }
+    .btn-login:hover{
+        color: #5f27bc;        
+    }
+
+</style>
+}
+
+
+<div class="login-container">
+    <div class="login-controls">
+        <div class="title">
+            <img src="/img/login-title.png" />
+        </div>
+        <div class="login">
+            <form id="external-account" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-validate">
+                <div class="">
+                    @foreach (var provider in Model.ExternalLogins)
+                    {
+
+                        <button type="submit" class="btn btn-block btn-login" name="provider" value="@provider.Name">ВХОД С @provider.DisplayName.ToUpper()</button>
+
+                    }
+                    @if (ViewBag.errorMessage != null)
+                    {
+                        <div class="text-danger">
+                            @ViewBag.errorMessage
+                        </div>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+    <footer class="login">
+        <div class="ft-esf">
+            <img src="/img/login-footer-esf.png" />
+        </div>
+        <div class="ft-title">
+            <center>
+                Проект „Създаване на модел за оптимизация на съдебната карта на българските съдилища и прокуратури и разработване на Единна информационна система на съдилищата”, се осъществява с финансовата подкрепа на Оперативна програма „Добро управление“ 2014-2020, съфинансирана от Европейския съюз чрез Европейския социален фонд
+            </center>
+        </div>
+        <div class="ft-opdu">
+            <img src="/img/login-footer-opdu.png" />
+        </div>
+    </footer>
+
+</div>
+
+
+

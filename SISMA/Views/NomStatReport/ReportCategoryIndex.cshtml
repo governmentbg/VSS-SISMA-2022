@@ -1,0 +1,119 @@
+﻿@using SISMA.Core.Models.StatReport
+@model FilterStatReportCategoryVM
+@{
+    ViewData["Title"] = "Категории статистически отчети";
+    ViewBag.MenuItemValue = $"reportcategory";
+}
+@section chelp{
+<partial name="_ContextHelp" model="@(new ContextHelpVM("Модул Конфигуриране - Меню Категория отчети","009_reportcategoryindex"))" />
+}
+
+<fieldset>
+    <legend>Търсене</legend>
+    <div class="row">
+        <div class="col-md-4">
+            @Html.EditorFor(x=>x.IntegrationId,"GenericDropDown")
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 text-left pb-15">
+            <button type="button" class="btn btn-primary" id="btnFilter" onclick="refreshTable('#mainTable')" value="Филтриране" title="Филтриране">
+                Филтриране
+                <i class="fa fa-search" title="Търсене"></i>
+            </button>
+        </div>
+    </div>
+</fieldset>
+
+<div class="row">
+    <div class="col-md-12 text-right pb-15">
+        <a asp-action="ReportCategoryAdd" class="btn btn-success btn-sm">
+            <i class="fa fa-plus"></i>
+            Добави
+        </a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <table id="mainTable" class="table table-hover table-striped"></table>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    $(function () {
+        var table = $('#mainTable').DataTable({
+            ajax: {
+                "url": "@Url.Action("ReportCategory_LoadData")",
+                "type": "POST",
+                "datatype": "json",
+                data: function (d) {
+                    d.filter = {
+                        IntegrationId:$('#IntegrationId').val()
+                    }
+                }
+            },
+             "rowCallback": function( row, data, index ) {
+                if ( !data.isActive ) {
+                $(row).addClass('text-danger');
+                }
+              },
+             filter:false,
+             sort:false,
+            columns: [
+                {
+                    name: 'label',
+                    data: 'label',
+                    title: 'Наименование'
+                },
+                {
+                    name: 'integrationName',
+                    data: 'integrationName',
+                    title: 'Интеграция'
+                },
+                {
+                    name: 'dateStart',
+                    data: "dateStart",
+                    title: 'Валиден от',
+                    className: "text-center",
+                    "render": function (value) {
+                        return JsonBGdate(value);
+                    }
+                }
+                ,
+                {
+                    name: 'isActive',
+                    data: "isActive",
+                    title: 'Активен запис',
+                    sortable: true,
+                    searchable: true,
+                    "render": function (value) {
+                        return JsonBoolToDaNe(value);
+                    }
+                },
+                {
+                    name: 'actions',
+                    data: "id",
+                    title: "",
+                    sortable: false,
+                    searchable: false,
+                    className: "text-center noExport",
+                    "render": function (value) {
+                        return TemplateToHtml('#templateEdit', value);
+                    }
+                }
+            ]
+        });
+
+         $(document).on('click', '.orderButton', function(sender){
+            postDataTablesOperation(sender,'@Url.Action("ReportCategory_ChangeOrder")',table);
+        });
+    });
+</script>
+
+<script id="templateEdit" type="text/x-handlebars-template">
+    <a href="#" data-id="{{this}}" data-moveUp="true" class="orderButton btn btn-info btn-sm" title="Нагоре"><i class="fa fa-angle-up"></i></a>
+    <a href="#" data-id="{{this}}" data-moveUp="false" class="orderButton btn btn-primary btn-sm" title="Надолу"><i class="fa fa-angle-down"></i></a>
+    <a href="@Url.Action("ReportCategoryEdit")/{{this}}" class="btn btn-warning btn-sm" title="Редактирай"><i class="fa fa-edit"></i><span class="d-none d-lg-inline"> Редактирай</span></a>
+</script>
+}

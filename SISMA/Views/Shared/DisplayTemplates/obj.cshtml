@@ -1,0 +1,7 @@
+﻿@using Helpers.GenericIO
+@model object
+<div class="form-group">
+    <label asp-for="@Model" class="control-label"></label>
+    <br />
+    @(Model?.ToString().Decode())
+</div>

@@ -1,0 +1,107 @@
+﻿@using SISMA.Core.Models.Reports
+@model EntitySelectVM
+@{
+    if (Model.SelectedList == null)
+    {
+        Model.SelectedList = new List<string>().ToArray();
+    }
+}
+
+<nav>
+    <div class="nav nav-tabs" id="nav-tab-filter" role="tablist">
+        @if (Model.ShowApealRegion)
+        {
+            <a class="nav-item nav-link" id="nav-apeal-tab" data-toggle="tab" href="#tabApealRegion" role="tab" aria-controls="nav-home" aria-selected="false">
+                <i class="fa fa-gavel"></i> По апелативен район
+            </a>
+        }
+        @if (Model.ShowDistrict)
+        {
+            <a class="nav-item nav-link" id="nav-district-tab" data-toggle="tab" href="#tabEkatte" role="tab" aria-controls="nav-profile" aria-selected="false">
+                <i class="fa fa-map-marker"></i> По населено място
+            </a>
+        }
+    </div>
+</nav>
+<div class="tab-content" id="nav-tabContent-filter">
+    <div class="tab-pane fade" id="tabApealRegion" role="tabpanel" aria-labelledby="nav-apeal-tab">
+        <div class="row">
+            <div class="col-lg-6">
+                @Html.EditorFor(x=>x.ApealRegionId,"GenericDropDown")
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tabEkatte" role="tabpanel" aria-labelledby="nav-district-tab">
+        <div class="row">
+            <div class="col-lg-6">
+                @Html.EditorFor(x=>x.DistrictId,"GenericDropDown")
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="divSelect" >
+    @Html.EditorFor(x=>x.SelectedList,"DualListBox",null,new{label=@Model.ListLabel})
+</div>
+<div>
+    <a href="#" class="btn btn-primary" onclick="selectEntity();">Избери</a>
+</div>
+
+<script>
+    $(function () {
+        $('#divSelect').hide();
+
+        $('#ApealRegionId').change(function () {
+            searchByApealRegion();
+        });
+        $('#DistrictId').change(function () {
+            searchByDistrict();
+        });
+
+        setTimeout(function () {
+            $('#nav-tab-filter').find('.nav-link:first').trigger('click');
+            $('#nav-tabContent-filter').find('.tab-pane.active select:first').trigger('change');
+            loadSelectedEntities();
+        }, 250);
+    });
+    function loadSelectedEntities() {
+        if ($('#SelectedList').data('loaded')) {
+            return;
+        }
+        $('@(Model.SelectedContainerUL)').find('li').each(function (i, e) {
+            let _id = $(e).data('id');
+            $('#SelectedList option[value="' + _id + '"]').attr('selected', 'selected');
+        });
+    }
+    function searchByApealRegion() {
+        requestContent('@Url.Action("GetEntityListByIntegration","Ajax")', { integrationId: @(Model.IntegrationId), apealRegionId: $('#ApealRegionId').val() }, function (data) {
+            $('#divSelect').show();
+            fillCombo(data, '#SelectedList', null);
+            loadSelectedEntities();
+            initDualListBox('#SelectedList', 20);
+        });
+    }
+    function searchByDistrict() {
+        requestContent('@Url.Action("GetEntityListByIntegration","Ajax")', { integrationId: @(Model.IntegrationId), districtId: $('#DistrictId').val() }, function (data) {
+            $('#divSelect').show();
+            fillCombo(data, '#SelectedList', null);
+            loadSelectedEntities();
+            initDualListBox('#SelectedList', 20);
+        });
+    }
+    function selectEntity() {
+        $('@Model.SelectedContainerUL').html('');
+        $('select[id*="bootstrap-duallistbox-selected-"]').find('option').each(function (i, e) {
+            let li = document.createElement('li');
+            li.setAttribute('data-id', $(e).val());
+            li.innerText = $(e).text();
+            $('@Model.SelectedContainerUL').append(li.outerHTML);
+        });
+        if (entitySelectedCallback) {
+            entitySelectedCallback();
+        }
+        HideModal();
+    }
+
+</script>

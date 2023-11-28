@@ -1,0 +1,14 @@
+﻿@model int?
+@{
+    var fieldName = ViewData.TemplateInfo.HtmlFieldPrefix.Replace(".", "_") + "_casecode";
+    var containerId = Guid.NewGuid().ToString();
+}
+
+<div class="casecode-container" data-container="@containerId">
+    <label asp-for="@Model" class="control-label has-auto-search"></label>
+    <input id="@fieldName" class="form-control casecode-control" autocomplete="false" />
+    <span class="help-block description"></span>
+    <input asp-for="@Model" type="hidden" class="casecode-val" />
+    <span asp-validation-for="@Model" class="text-danger"></span>
+    <div id="@String.Format("{0}list", fieldName)" style="z-index:1050;"></div>
+</div>

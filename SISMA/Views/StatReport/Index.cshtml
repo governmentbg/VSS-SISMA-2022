@@ -1,0 +1,535 @@
+﻿@using SISMA.Core.Models.StatReport
+@using SISMA.Infrastructure.Constants
+@model StatReportFilterVM
+@{
+    ViewData["Title"] = "Статистически отчети " + ViewBag.IntegrationLabel;
+    ViewBag.MenuItemValue = $"statreport{Model.IntegrationId}";
+    var entityLabel = NomenclatureConstants.Integrations.EntityLabel(Model.IntegrationId);
+}
+
+@section chelp{
+    @if(Model.IntegrationId == NomenclatureConstants.Integrations.EISS){
+        <partial name="_ContextHelp" model="@(new ContextHelpVM($"Модул Справки - Меню Статистически отчети {ViewBag.IntegrationLabel}","003_statreport"))" />
+    }else{
+        <partial name="_ContextHelp" model="@(new ContextHelpVM($"Модул Справки - Меню Статистически отчети {ViewBag.IntegrationLabel}","004_statreport_1"))" />
+    }
+}
+
+<fieldset>
+    <div class="row">
+        <div class="col-md-4">
+            @Html.EditorFor(x=>x.ReportCategoryId,"GenericDropDown")
+        </div>
+        <div class="col-md-8">
+            @Html.EditorFor(x=>x.ReportTypeId,"GenericDropDown")
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            @Html.EditorFor(x=>x.PeriodNo,"GenericDropDown")
+        </div>
+        <div class="col-md-3">
+            @Html.EditorFor(x=>x.PeriodYear,"GenericDropDown")
+        </div>
+        <div class="col-md-6">
+            <a href="#" class="text-primary" onclick="loadEntityFilter();return false;">Изберете @entityLabel</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="ul-entity-list" id="ulSelectedList"></ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <a href="#" class="btn btn-primary" onclick="loadData();return false;">Търсене</a>
+        </div>
+    </div>
+</fieldset>
+<br />
+
+<div class="row">
+    <div class="col-md-12">
+        <table id="mainTable" style="width:100%;" class="table table-hover table-striped"></table>
+    </div>
+</div>
+
+
+<div class="row chart-container">
+    <div class="col-md-12">
+        <div id="chartTools">
+            <a href="#" class="text-primary ct-button tools-bar" onclick="changeOrientation('portrait');return false;" title="Портретно"><i class="fa fa-bars"></i></a>
+            <a href="#" class="text-primary ct-button tools-bar" onclick="changeOrientation('landscape');return false;" title="Пейзажно"><i class="fa fa-chart-bar"></i></a>
+            <a href="#" class="text-success ct-button" onclick="saveChartImage();return false;"><i class="fa fa-download"></i>&nbsp;Запази</a>
+        </div>
+        <canvas id="cChart" style="display: block; width: 100%;height:400px;max-height:400px" class="chartjs-render-monitor"></canvas>
+    </div>
+</div>
+
+
+@section scripts {
+<script href="/lib/chartjs-3.7.1/helpers.esm.js" type="text/javascript"></script>
+<style>
+    div#chartTools {
+        display: block;
+        position: absolute;
+        width: 250px;
+        height: 30px;
+        top: 0;
+        right: 15px;
+        text-align: right;
+    }
+
+    .ct-button {
+        display: inline;
+        height: 24px;
+        width: 24px;
+        margin-left: 5px;
+    }
+
+    .align-right {
+        text-align: right;
+    }
+</style>
+
+<script>
+        $(function(){
+            $('#ReportCategoryId').change(function(){
+                requestCombo('@Url.Action("GetStatReportByCategory","Ajax")',{reportCategoryId:$(this).val()},'#ReportTypeId','');
+            }).trigger('change');
+            $('.chart-container').hide();
+        });
+        function loadEntityFilter(){
+            requestContent('@Url.Action("Get_EntityFilter")',{integrationId:@(Model.IntegrationId),selectedContainer:'#ulSelectedList'},function(html){
+                ShowModalDialog('Изберете',html,true);
+            });
+        }
+        function getEntityList(){
+            let ids = [];
+            $('#ulSelectedList li').each(function(i,e){
+                ids.push($(e).data('id'));
+            });
+            return ids.join(',');
+        }
+        function entitySelectedCallback(){
+            HideModal();
+        }
+        let reportData = {};
+        function loadData(){
+            clearDataTable();
+            $('.chart-container').hide();
+            requestContent('@Url.Action("GetData")',{
+                statReportId:$('#ReportTypeId').val(),
+                periodNo:$('#PeriodNo').val(),
+                periodYear:$('#PeriodYear').val(),
+                entityIds:getEntityList()
+            },function(data){
+                if(data.noData){
+                    showNoData();
+                }else{
+                    reportData = data;
+                    showDataTable(reportData);
+                    drawChart(reportData);
+                }
+            });
+        }
+        function dtTitle(){
+            return $('#ReportTypeId option:selected').text();
+        }
+        function dtMessageTop(){
+            let result ='';
+            result += 'Период: '+$('#PeriodNo option:selected').text();
+            result += ', '+$('#PeriodYear option:selected').text();
+
+            let ids = [];
+            $('#ulSelectedList li').each(function(i,e){
+                ids.push($(e).text());
+            });
+            if(ids.length > 0){
+                result += '; '+ids.join(',');
+            }
+            return result;
+        }
+        function dtMessageBottom(){
+            return "Изготвено на: " + moment(Date()).format("DD.MM.YYYYг. HH:mm:ss");
+        }
+        function showNoData(){
+            clearDataTable();
+            if(chartObj!=null){
+               chartObj.destroy();
+            }
+            messageHelper.ShowErrorMessage('За избрания период няма подадени данни!');
+        }
+        function clearDataTable(){
+             if($.fn.dataTable.isDataTable('#mainTable')){
+                    $('#mainTable').DataTable().columns().clear();
+                    $('#mainTable').DataTable().clear().destroy();
+                    $('#mainTable').empty()
+                }
+        }
+        function showDataTable(data){
+            let _cols = [];
+                for(let i=0;i<data.columns.length;i++){
+                    let _col = data.columns[i];
+                    let _newCol = {
+                        name: _col.columnName,
+                        data: _col.columnName,
+                        title: _col.label,
+                        sortable: true
+                    };
+                    if(_col.dataCol){
+                        _newCol.className="align-right";
+                    }
+                    if(_col.columnName == 'order'){
+                        _newCol.width = 50;
+                        _newCol.className="align-right";
+                    }
+                    _cols.push(_newCol);
+                }
+                clearDataTable();
+
+                let tblData = $('#mainTable').DataTable({
+                    "aaData": data.data,
+                    "aoColumns":_cols,
+                    bServerSide : false,
+                    "retrieve": true,
+                    "paging": false,
+                    filter:false,
+                    "scrollX": true,
+                    autoWidth: true,
+                    buttons: {
+                        dom: {
+                    button: {
+                        tag: 'button',
+                            className: 'btn btn-sm'
+                        },
+                        container: {
+                            className: 'd-inline'
+                        }
+                        },
+                        buttons: ['io_colvis','io_excel', 'io_pdf', 'io_print']
+                    }
+                });
+        }
+        let chartObj = null;
+        let chartSettings = {
+            orientation:'landscape'
+        };
+
+        function drawChart(data){
+            if(chartObj!=null){
+               chartObj.destroy();
+            }
+            switch(data.groupType){
+                case @(NomenclatureConstants.StatReportType.ByIBD):
+                   drawDonut(data);
+                   break;
+                case @(NomenclatureConstants.StatReportType.ByCaseCode):
+                case @(NomenclatureConstants.StatReportType.ByIBD3Years):
+                case @(NomenclatureConstants.StatReportType.ByIBD3YearsInverse):
+                case @(NomenclatureConstants.StatReportType.ByIBD3YearsMixed):
+                   drawBarsMulti(data);
+                   break;
+            }
+        }
+
+        function changeOrientation(orientation){
+            if(reportData == null){
+                return false;
+            }
+            if(chartObj!=null){
+               chartObj.destroy();
+            }
+            chartSettings.orientation = orientation;
+            let cnvs = document.getElementById('cChart');
+            switch(orientation){
+                case 'landscape':
+                    cnvs.style.height = '400px';
+                    cnvs.style.maxHeight = '400px';
+                    break;
+                case 'portrait':
+                    cnvs.style.height = '650px';
+                    cnvs.style.maxHeight = '650px';
+                    break;
+            }
+            drawChart(reportData);
+        }
+
+        function getColorScheme(){
+            return [
+            '#74b9ff','#55efc4','#ffeaa7','#fab1a0','#a29bfe','#fd79a8','#b2bec3','#0984e3',
+            "#00b894","#fdcb6e","#ff7675","#6c5ce7",
+            "#e17055","#d63031","#636e72","#74b9ff","#55efc4",
+            "#ffeaa7","#fab1a0","#a29bfe","#fd79a8","#b2bec3",
+            "#0984e3","#00b894","##fdcb6e","#ff7675","#6c5ce7",
+            "#e17055","#d63031","#636e72","#74b9ff","#55efc4",
+            "#ffeaa7","#fab1a0","#a29bfe","#fd79a8","#b2bec3",
+            "#0984e3","#00b894","##fdcb6e","#ff7675","#6c5ce7",
+            "#e17055","#d63031","#636e72","#74b9ff","#55efc4",
+            "#ffeaa7","#fab1a0","#a29bfe","#fd79a8","#b2bec3"];
+        }
+        function getColorSchemeOld(){
+            return [
+            '#f56954','#00a65a','#f39c12','#00c0ef','#3c8dbc','#d2d6de','#3c8dbc','#d2d6de',
+            "#25CCF7","#FD7272","#54a0ff","#00d2d3",
+            "#1abc9c","#2ecc71","#3498db","#9b59b6","#34495e",
+            "#16a085","#27ae60","#2980b9","#8e44ad","#2c3e50",
+            "#f1c40f","#e67e22","#e74c3c","#ecf0f1","#95a5a6",
+            "#f39c12","#d35400","#c0392b","#bdc3c7","#7f8c8d",
+            "#55efc4","#81ecec","#74b9ff","#a29bfe","#dfe6e9",
+            "#00b894","#00cec9","#0984e3","#6c5ce7","#ffeaa7",
+            "#fab1a0","#ff7675","#fd79a8","#fdcb6e","#e17055",
+            "#d63031","#feca57","#5f27cd","#54a0ff","#01a3a4"];
+        }
+
+        function toHexWithAlpha(hexCode, opacity = 1){
+        var hex = hexCode.replace('#', '');
+
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+
+        var r = parseInt(hex.substring(0,2), 16),
+            g = parseInt(hex.substring(2,4), 16),
+            b = parseInt(hex.substring(4,6), 16);
+
+        /* Backward compatibility for whole number based opacity values. */
+        if (opacity > 1 && opacity <= 100) {
+            opacity = opacity / 100;
+        }
+
+        return 'rgba('+r+','+g+','+b+','+opacity+')';
+    }
+
+        function drawDonut(data){
+            $('.chart-container').show();
+            $('.tools-bar').hide();
+            let _labels = [];
+            let _data = [];
+            for(let i=0;i<data.data.length;i++){
+                _labels.push(data.data[i].label);
+                _data.push(data.data[i][data.columns[2].columnName]);
+            }
+
+            //-------------
+            //- DONUT CHART -
+            //-------------
+            // Get context with jQuery - using jQuery's .get() method.
+            var donutChartCanvas = $('#cChart').get(0).getContext('2d')
+            var donutData        = {
+              labels: _labels,
+              datasets: [
+                {
+                  data: _data,
+                  backgroundColor: getColorScheme(),
+                }
+              ]
+            }
+            var donutOptions     = {
+              maintainAspectRatio : false,
+              responsive : true,
+              plugins:{
+                title: {
+                    display: true,
+                    text: data.reportTitle,
+                    font: {size:24}
+                },
+                subtitle: {
+                    display: true,
+                    text: data.reportSubtitle,
+                    font: {size:18}
+                },
+                tooltip:{
+                   enabled:false
+                }
+               },
+               animation:{
+                  onComplete: function () {
+                    var ctx = this.ctx;
+                    ctx.font = "bold 14px 'Helvetica Neue', Helvetica, Arial, sans-serif";
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'center';
+                    let _legends = this.$context.chart.legend.legendItems;
+                    this._sortedMetasets.forEach(function (set) {
+                            set.data.forEach(function(model){
+                                if(!_legends[model.$context.dataIndex].hidden){
+                                    var mid_radius = model.innerRadius + (model.outerRadius - model.innerRadius)/2,
+                                    start_angle = model.startAngle,
+                                    end_angle = model.endAngle,
+                                    mid_angle = start_angle + (end_angle - start_angle)/2;
+                                    var x = mid_radius * Math.cos(mid_angle);
+                                    var y = mid_radius * Math.sin(mid_angle);
+                                    ctx.fillText(model.$context.raw, model.x + x,model.y+ y);
+                                }
+                            });
+                    });
+                  }
+                }
+            }
+            //Create pie or douhnut chart
+            // You can switch between pie and douhnut using the method below.
+           chartObj = new Chart(donutChartCanvas, {
+              type: 'doughnut',
+              data: donutData,
+              options: donutOptions
+            })
+        }
+
+        function drawBarsMulti(data){
+            $('.chart-container').show();
+            $('.tools-bar').show();
+            let _labels = [];
+
+            for(let i=0;i<data.data.length;i++){
+                _labels.push(data.data[i].label);
+            }
+            let _datasets = [];
+            let hasMixedAxis = false;
+            for(let c=0;c<data.columns.length;c++){
+                if(!data.columns[c].dataCol){
+                    continue;
+                }
+
+                let barDS = {};
+                //barDS.type= 'bar';
+                barDS.label = data.columns[c].label;
+                barDS.backgroundColor = toHexWithAlpha(getColorScheme()[_datasets.length],0.7);
+                barDS.data = [];
+                for(let i=0;i<data.data.length;i++){
+                   barDS.data.push(data.data[i][data.columns[c].columnName]);
+                }
+                barDS.yAxisID = 'bar';
+                if(data.columns[c].mixedCol){
+                   barDS.yAxisID = 'line';
+                   barDS.type = 'line';
+                   barDS.fill = false;
+                   barDS.backgroundColor = getColorScheme()[_datasets.length];
+                   barDS.borderColor = barDS.backgroundColor;
+                   barDS.borderWidth = 5;
+                   //barDS.pointRadius = 3;
+                   //barDS.pointHitRadius = 40;
+                   hasMixedAxis = true;
+                }
+                 _datasets.push(barDS);
+            }
+
+            let areaChartData = {
+                labels : _labels,
+                datasets:_datasets
+            }
+
+             var barChartData = $.extend(true, {}, areaChartData);
+             for(let i=0;i<_datasets.length;i++){
+                 barChartData.datasets[i] = _datasets[i];
+             }
+             let _indexAxis = 'x';
+             if(chartSettings.orientation == 'portrait'){
+                  _indexAxis = 'y';
+             }
+
+            var barChartOptions = {
+               responsive              : true,
+               maintainAspectRatio     : false,
+               datasetFill             : false,
+               indexAxis:_indexAxis,
+               plugins:{
+                title: {
+                    display: true,
+                    text: data.reportTitle,
+                    font: {size:24}
+                },
+                subtitle: {
+                    display: true,
+                    text: data.reportSubtitle,
+                    font: {size:18}
+                },
+                tooltip:{
+                   enabled:false
+                }
+               },
+               animation:{
+                   duration: 750,
+                   onComplete: function () {
+
+                    var ctx = this.ctx;
+                    ctx.font = "bold 14px 'Helvetica Neue', Helvetica, Arial, sans-serif";
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'center';
+
+                    let dX = 0;
+                    let dY = 15;
+                    if(_indexAxis == 'y'){
+                        ctx.textAlign = 'right';
+                        dX = -10;
+                        dY = 0;
+                    }
+
+                    this._sortedMetasets.forEach(function (set) {
+                        //debugger;
+                        if(!set.hidden && set.type== 'bar'){
+                            set.data.forEach(function(bar){
+                                let tX = bar.x + dX;
+                                let tY = bar.y + dY;
+
+                                if(bar.width < 20){
+                                    tX=bar.x+15;
+                                }
+                                if(bar.height < 20){
+                                    tY=bar.y-15;
+                                }
+
+                                 ctx.fillText(bar.$context.raw, tX, tY);
+                            });
+                        }
+                    });
+                }
+             }
+           }
+
+           if(hasMixedAxis){
+               barChartOptions.stacked = false;
+               barChartOptions.scales = {
+                    bar: {
+                            type: 'linear',
+                            //stacked: false,
+                            //display: true,
+                            position: 'left',
+                            //beginAtZero: true,
+                        },
+                    line: {
+                            type: 'linear',
+                            //display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            stepSize: 1,
+                            min:0,
+                            //max:8000000,
+                            // grid line settings
+                            grid: {
+                                drawOnChartArea: false, // only want the grid lines for one axis to show up
+                            }
+                        }
+                };
+           }
+
+           var barChartCanvas = $('#cChart').get(0).getContext('2d')
+
+           chartObj = new Chart(barChartCanvas, {
+               type: 'bar',
+               label: data.reportLabel,
+               data: barChartData,
+               options: barChartOptions
+
+           });
+        }
+
+        function saveChartImage(){
+            var a = document.createElement('a');
+            a.href = chartObj.toBase64Image();
+            a.download = 'sismaChart.png';
+
+            // Trigger the download
+            a.click();
+        }
+</script>
+}

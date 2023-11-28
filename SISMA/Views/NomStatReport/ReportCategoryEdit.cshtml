@@ -1,0 +1,46 @@
+﻿@using SISMA.Infrastructure.Data.Models.Nomenclatures
+@model NomStatReportCategory
+@{
+    ViewData["Title"] = "Добавяне на категория отчет";
+    if (Model.Id > 0)
+    {
+        ViewData["Title"] = "Редактиране на категория отчет";
+    }
+    ViewBag.MenuItemValue = $"reportcategory";
+}
+<div class="row">
+    <div class="col-md-6">
+        <fieldset class="fs-group">
+            <legend>Основни данни</legend>
+            <form asp-action="ReportCategoryEdit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                @Html.HiddenFor(x => x.Id)
+                @Html.EditorFor(x => x.IntegrationId, "GenericDropDown")
+                @Html.EditorFor(x => x.Label)
+                @Html.EditorFor(x => x.Description)
+                <div class="row">
+                    <div class="col-md-4">
+                        @Html.EditorFor(x => x.DateStart)
+                    </div>
+                    <div class="col-md-4">
+                        @Html.EditorFor(x => x.DateEnd)
+                    </div>
+                    <div class="col-md-4">
+                        @Html.EditorFor(x => x.IsActive)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <input type="submit" value="Запис" class="btn btn-success" />
+                    <a asp-action="ReportCategoryIndex" class="btn btn-default">Назад</a>
+                    @if (Model.Id > 0)
+                    {
+                        <div class="float-right">
+                            @await Html.PartialAsync("_ShowLogOperation", new SISMA.Core.Models.ShowLogModel() { ObjectId = Model.Id.ToString() })
+                        </div>
+                    }
+                </div>
+            </form>
+        </fieldset>
+    </div>
+</div>
